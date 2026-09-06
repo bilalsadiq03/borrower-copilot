@@ -3,6 +3,14 @@ export type EmploymentType =
   | "self-employed"
   | "informal"
 
+  export type LoanPurpose =
+  | "personal"
+  | "home"
+  | "business"
+  | "vehicle"
+  | "education"
+  | "other"
+
 export type LoanType =
   | "personal"
   | "home"
@@ -25,7 +33,7 @@ export interface BorrowerProfile {
 
   loanType?: LoanType
   loanAmount?: number
-  loanPurpose?: string
+  loanPurpose: LoanPurpose
 
   creditScore?: number
   creditScoreKnown: boolean
