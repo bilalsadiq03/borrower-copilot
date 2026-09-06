@@ -1,0 +1,56 @@
+export type EmploymentType =
+  | "salaried"
+  | "self-employed"
+  | "informal"
+
+export type LoanType =
+  | "personal"
+  | "home"
+  | "lap"
+  | "gold"
+  | "two-wheeler"
+  | "business"
+
+export interface BorrowerProfile {
+  age?: number
+
+  employmentType?: EmploymentType
+
+  monthlyIncome?: number
+  incomeMin?: number
+  incomeMax?: number
+
+  monthlyExpenses?: number
+  existingEMI?: number
+
+  loanType?: LoanType
+  loanAmount?: number
+  loanPurpose?: string
+
+  creditScore?: number
+  creditScoreKnown: boolean
+
+  incomeStability?: string
+
+  emergencySavingsMonths?: number
+
+  variableIncomePercent?: number
+
+  existingLoanCount?: number
+  recentBounce?: boolean
+
+  collateralValue?: number
+
+  coApplicantIncome?: number
+
+  upcomingExpenses?: number
+
+  productiveLoan?: boolean
+
+  // Adaptive questions
+  employmentTenure?: string
+  businessTenure?: string
+  itrIncome?: number
+
+  hasCollateral?: "yes" | "no" | "unknown"
+}
