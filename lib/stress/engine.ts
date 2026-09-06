@@ -29,7 +29,7 @@ export function runStressTest(
 
   const estimatedEMI =
     calculateEMI(
-      profile.loanAmount,
+      profile.loanAmount ?? 0,
       rate,
       60
     )

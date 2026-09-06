@@ -51,7 +51,7 @@ export default function Home() {
     )
   }
 
-  if (result && recommendation) {
+  if (profile && result && recommendation) {
   return (
     <ResultsDashboard
       profile={profile}
