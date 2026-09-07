@@ -9,7 +9,7 @@ export function AffordabilityCard({
   result,
 }: AffordabilityCardProps) {
   return (
-    <section className="rounded-2xl border bg-white p-6 shadow-sm">
+    <section className="rounded-2xl border bg-black text-white p-6 shadow-sm">
       <div>
         <p className="text-sm font-medium text-gray-500">
           Affordability
@@ -53,7 +53,7 @@ export function AffordabilityCard({
       </div>
 
       <div className="mt-6 rounded-xl border p-4">
-        <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center color-blue justify-between text-sm">
           <span>Borrower-safe threshold</span>
           <span className="font-medium">
             {(result.borrowerFOIR * 100).toFixed(0)}%

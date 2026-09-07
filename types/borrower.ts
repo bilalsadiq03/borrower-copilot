@@ -3,12 +3,17 @@ export type EmploymentType =
   | "self-employed"
   | "informal"
 
-  export type LoanPurpose =
+export type LoanPurpose =
   | "personal"
   | "home"
   | "business"
   | "vehicle"
   | "education"
+  | "wedding"
+  | "medical"
+  | "home-improvement"
+  | "debt-consolidation"
+  | "emergency"
   | "other"
 
 export type LoanType =

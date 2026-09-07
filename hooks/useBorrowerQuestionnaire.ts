@@ -1,7 +1,6 @@
 "use client"
 
 import {
-  useEffect,
   useMemo,
   useState,
 } from "react"
@@ -29,21 +28,16 @@ export function useBorrowerQuestionnaire() {
     [profile]
   )
 
-  /*
-   * Prevent the current question index from
-   * becoming invalid when adaptive questions
-   * disappear after an answer changes.
-   */
-  useEffect(() => {
-    if (currentIndex >= questions.length) {
-      setCurrentIndex(
-        Math.max(0, questions.length - 1)
-      )
-    }
-  }, [currentIndex, questions.length])
+  const safeIndex =
+    questions.length === 0
+      ? 0
+      : Math.min(
+          currentIndex,
+          questions.length - 1
+        )
 
   const currentQuestion: Question | undefined =
-    questions[currentIndex]
+    questions[safeIndex]
 
   /*
    * Store an answer in the borrower profile.
@@ -63,12 +57,10 @@ export function useBorrowerQuestionnaire() {
    */
   function next() {
     if (
-      currentIndex <
+      safeIndex <
       questions.length - 1
     ) {
-      setCurrentIndex(
-        (index) => index + 1
-      )
+      setCurrentIndex(safeIndex + 1)
     }
   }
 
@@ -76,10 +68,8 @@ export function useBorrowerQuestionnaire() {
    * Move to the previous question.
    */
   function back() {
-    if (currentIndex > 0) {
-      setCurrentIndex(
-        (index) => index - 1
-      )
+    if (safeIndex > 0) {
+      setCurrentIndex(safeIndex - 1)
     }
   }
 
@@ -107,7 +97,7 @@ export function useBorrowerQuestionnaire() {
   const progress =
     questions.length === 0
       ? 0
-      : ((currentIndex + 1) /
+      : ((safeIndex + 1) /
           questions.length) *
         100
 
@@ -143,17 +133,17 @@ export function useBorrowerQuestionnaire() {
 
     // State
     isFirst:
-      currentIndex === 0,
+      safeIndex === 0,
 
     isLast:
-      currentIndex ===
+      safeIndex ===
       questions.length - 1,
 
     isCurrentQuestionAnswered,
 
     isComplete:
       questions.length > 0 &&
-      currentIndex ===
+      safeIndex ===
         questions.length - 1 &&
       isCurrentQuestionAnswered,
   }

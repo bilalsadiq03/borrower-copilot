@@ -5,6 +5,18 @@ export interface StressScenario {
 }
 
 export interface StressTestResult {
+  normalIncome: number
+  stressedIncome: number
+
+  normalFOIR: number
+  stressedFOIR: number
+
+  normalDisposableIncome: number
+  stressedDisposableIncome: number
+
+  incomeDropAmount: number
+  expenseIncrease: number
+
   monthlyIncome: number
   monthlyExpenses: number
   existingEMI: number

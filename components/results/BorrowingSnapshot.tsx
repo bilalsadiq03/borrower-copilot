@@ -10,14 +10,14 @@ export function BorrowingSnapshot({
 }: BorrowingSnapshotProps) {
   return (
     <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <div className="rounded-xl border bg-black text-white p-5 shadow-sm">
+      <div className="rounded-xl border bg-black p-5 text-white shadow-sm">
         <p className="text-sm text-gray-200">
           Safe loan amount
         </p>
 
         <p className="mt-2 text-2xl font-semibold text-white">
           {formatCurrency(result.safeAmount.min)}
-          {" – "}
+          {" - "}
           {formatCurrency(result.safeAmount.max)}
         </p>
 
@@ -26,14 +26,14 @@ export function BorrowingSnapshot({
         </p>
       </div>
 
-      <div className="rounded-xl border bg-black text-white p-5 shadow-sm">
+      <div className="rounded-xl border bg-black p-5 text-white shadow-sm">
         <p className="text-sm text-gray-200">
           Estimated lender amount
         </p>
 
         <p className="mt-2 text-2xl font-semibold text-white">
           {formatCurrency(result.lenderAmount.min)}
-          {" – "}
+          {" - "}
           {formatCurrency(result.lenderAmount.max)}
         </p>
 
@@ -42,14 +42,14 @@ export function BorrowingSnapshot({
         </p>
       </div>
 
-      <div className="rounded-xl border bg-black text-white p-5 shadow-sm">
+      <div className="rounded-xl border bg-black p-5 text-white shadow-sm">
         <p className="text-sm text-gray-200">
           Fair rate range
         </p>
 
         <p className="mt-2 text-2xl font-semibold text-white">
           {result.fairRate.min.toFixed(1)}%
-          {" – "}
+          {" - "}
           {result.fairRate.max.toFixed(1)}%
         </p>
 
@@ -58,14 +58,14 @@ export function BorrowingSnapshot({
         </p>
       </div>
 
-      <div className="rounded-xl border bg-black text-white p-5 shadow-sm">
+      <div className="rounded-xl border bg-black p-5 text-white shadow-sm">
         <p className="text-sm text-gray-200">
           Safe EMI
         </p>
 
         <p className="mt-2 text-2xl font-semibold text-white">
           {formatCurrency(result.safeEMI.min)}
-          {" – "}
+          {" - "}
           {formatCurrency(result.safeEMI.max)}
         </p>
 

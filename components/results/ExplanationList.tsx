@@ -51,7 +51,7 @@ export function ExplanationList({
                   key={index}
                   className="text-sm text-gray-600"
                 >
-                  • {action}
+                  - {action}
                 </li>
               )
             )}

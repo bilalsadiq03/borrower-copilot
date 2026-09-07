@@ -16,6 +16,158 @@ import type {
   RulesResult,
 } from "./types"
 
+function getMissingInputs(
+  profile: BorrowerProfile
+): string[] {
+  const missingInputs: string[] = []
+
+  if (
+    profile.monthlyExpenses === undefined
+  ) {
+    missingInputs.push("monthly household expenses")
+  }
+
+  if (
+    profile.existingEMI === undefined
+  ) {
+    missingInputs.push("current EMI commitments")
+  }
+
+  if (profile.loanPurpose === undefined) {
+    missingInputs.push("loan purpose")
+  }
+
+  if (profile.loanAmount === undefined) {
+    missingInputs.push("requested loan amount")
+  }
+
+  if (profile.loanType === undefined) {
+    missingInputs.push("loan type")
+  }
+
+  if (profile.age === undefined) {
+    missingInputs.push("age")
+  }
+
+  if (profile.incomeStability === undefined) {
+    missingInputs.push("income stability")
+  }
+
+  if (profile.creditScoreKnown === false) {
+    missingInputs.push("credit score")
+  }
+
+  if (
+    profile.creditScoreKnown === true &&
+    profile.creditScore === undefined
+  ) {
+    missingInputs.push("credit score")
+  }
+
+  if (
+    profile.employmentType === "salaried" &&
+    profile.employmentTenure === undefined
+  ) {
+    missingInputs.push("employment tenure")
+  }
+
+  if (
+    profile.employmentType === "salaried" &&
+    profile.variableIncomePercent === undefined
+  ) {
+    missingInputs.push("variable income share")
+  }
+
+  if (
+    profile.employmentType === "self-employed" &&
+    profile.businessTenure === undefined
+  ) {
+    missingInputs.push("business tenure")
+  }
+
+  if (
+    profile.employmentType === "self-employed" &&
+    profile.itrIncome === undefined
+  ) {
+    missingInputs.push("ITR income")
+  }
+
+  if (
+    profile.employmentType === "self-employed" &&
+    profile.hasCollateral === undefined
+  ) {
+    missingInputs.push("collateral status")
+  }
+
+  if (
+    profile.hasCollateral === "yes" &&
+    profile.collateralValue === undefined
+  ) {
+    missingInputs.push("collateral value")
+  }
+
+  if (
+    profile.employmentType === "informal" &&
+    profile.existingLoanCount === undefined
+  ) {
+    missingInputs.push("existing loan count")
+  }
+
+  if (
+    profile.employmentType === "informal" &&
+    profile.recentBounce === undefined
+  ) {
+    missingInputs.push("recent EMI bounce history")
+  }
+
+  if (
+    profile.employmentType === "informal" &&
+    profile.emergencySavingsMonths === undefined
+  ) {
+    missingInputs.push("emergency savings")
+  }
+
+  if (
+    profile.employmentType === "informal" &&
+    profile.productiveLoan === undefined
+  ) {
+    missingInputs.push("whether the loan increases income")
+  }
+
+  return missingInputs
+}
+
+function getConfidence(
+  missingInputs: string[]
+): "high" | "medium" | "low" {
+  if (missingInputs.length === 0) {
+    return "high"
+  }
+
+  if (missingInputs.length <= 2) {
+    return "medium"
+  }
+
+  return "low"
+}
+
+function getRangeFloor(
+  confidence:
+    | "high"
+    | "medium"
+    | "low"
+): number {
+  if (confidence === "high") {
+    return 0.9
+  }
+
+  if (confidence === "medium") {
+    return 0.82
+  }
+
+  return 0.72
+}
+
 export function evaluateBorrower(
   profile: BorrowerProfile
 ): RulesResult {
@@ -34,24 +186,68 @@ export function evaluateBorrower(
     )
   }
 
-  const rateBand =
-    getFairRateBand(profile)
+  const route =
+    getRecommendedProductRoute(profile)
+
+  const effectiveLoanType =
+    route === "secured-lap"
+      ? "lap"
+      : route === "review"
+        ? profile.loanType ?? "personal"
+        : route
+
+  const rateProfile: BorrowerProfile = {
+    ...profile,
+    loanType: effectiveLoanType,
+  }
+
+  const scenario =
+    getScenarioAdjustment(profile)
+
+  const baseRateBand =
+    getFairRateBand(rateProfile)
+
+  const adjustedRateBand: AmountRange = {
+    min: Math.max(
+      0,
+      baseRateBand.min +
+        scenario.rateAdjustment
+    ),
+    max: Math.max(
+      Math.max(
+        0,
+        baseRateBand.min +
+          scenario.rateAdjustment
+      ),
+      baseRateBand.max +
+        scenario.rateAdjustment
+    ),
+  }
 
   const fairRate =
-    (rateBand.min + rateBand.max) / 2
-
-  const loanType =
-    profile.loanType ?? "personal"
+    (adjustedRateBand.min + adjustedRateBand.max) / 2
 
   const tenure =
-    RULES.tenure[loanType]
+    RULES.tenure[effectiveLoanType]
 
   /*
    * Borrower-safe EMI
    */
   const safeTotalEMI =
-    monthlyIncome *
-    RULES.affordability.defaultBorrowerFOIR
+    Math.min(
+      monthlyIncome *
+        RULES.affordability.defaultBorrowerFOIR,
+      Math.max(
+        0,
+        monthlyIncome -
+          Math.max(
+            0,
+            profile.monthlyExpenses ?? 0
+          )
+      ) *
+        RULES.affordability
+          .postExpenseBorrowerShare
+    )
 
   const safeNewEMI =
     Math.max(
@@ -93,25 +289,31 @@ export function evaluateBorrower(
    * Use a range instead of pretending we know
    * the exact amount.
    */
+  const missingInputs =
+    getMissingInputs(profile)
+
+  const confidence =
+    getConfidence(missingInputs)
+
+  const rangeFloor =
+    getRangeFloor(confidence)
+
   const safeAmountRange: AmountRange = {
-    min: Math.round(safeLoanAmount * 0.90),
-    max: Math.round(safeLoanAmount),
+    min: Math.round(
+      safeLoanAmount *
+        scenario.safeAmountMultiplier *
+        rangeFloor
+    ),
+    max: Math.round(
+      safeLoanAmount *
+        scenario.safeAmountMultiplier
+    ),
   }
 
-  const scenario = getScenarioAdjustment(profile)
-
-  const adjustedSafeAmount = {
-  min:
-    safeAmountRange.min *
-    scenario.safeAmountMultiplier,
-
-  max:
-    safeAmountRange.max *
-    scenario.safeAmountMultiplier,
-}
-
   const lenderAmountRange: AmountRange = {
-    min: Math.round(lenderLoanAmount * 0.90),
+    min: Math.round(
+      lenderLoanAmount * rangeFloor
+    ),
     max: Math.round(lenderLoanAmount),
   }
 
@@ -133,6 +335,8 @@ export function evaluateBorrower(
   const stress =
     calculateStressTest({
       monthlyIncome,
+      monthlyExpenses:
+        profile.monthlyExpenses ?? 0,
       existingEMI,
       proposedEMI,
       incomeDropPercent:
@@ -143,49 +347,27 @@ export function evaluateBorrower(
     getBorrowDecision({
       profile,
       requestedAmount,
-      safeAmount: safeLoanAmount,
+      safeAmount: safeAmountRange.max,
       stressPasses: stress.passes,
+      monthlyExpenses:
+        profile.monthlyExpenses ?? 0,
     })
 
   const flags =
     getRiskFlags(profile)
 
-  const route =
-    getRecommendedProductRoute(profile)
-
-  /*
-   * Confidence is deliberately conservative.
-   */
-  const answeredQuestions =
-    Object.values(profile)
-      .filter(
-        (value) =>
-          value !== undefined &&
-          value !== null &&
-          value !== ""
-      )
-      .length
-
-  const confidence =
-    answeredQuestions >=
-    RULES.confidence.minimumAnsweredQuestions
-      ? "high"
-      : answeredQuestions >= 6
-        ? "medium"
-        : "low"
-
   return {
     productRoute: route,
 
-stressTest: {
-  normalFOIR: stress.normalFOIR,
-  stressedFOIR: stress.stressedFOIR,
-  normalDisposableIncome:
-    stress.normalDisposableIncome,
-  stressedDisposableIncome:
-    stress.stressedDisposableIncome,
-  passes: stress.passes,
-},
+    stressTest: {
+      normalFOIR: stress.normalFOIR,
+      stressedFOIR: stress.stressedFOIR,
+      normalDisposableIncome:
+        stress.normalDisposableIncome,
+      stressedDisposableIncome:
+        stress.stressedDisposableIncome,
+      passes: stress.passes,
+    },
     decision: decision.decision,
     decisionReason: decision.reason,
 
@@ -199,18 +381,20 @@ stressTest: {
       RULES.affordability.defaultBorrowerFOIR,
 
     safeEMI: {
-      min: Math.round(safeNewEMI * 0.90),
+      min: Math.round(safeNewEMI * rangeFloor),
       max: Math.round(safeNewEMI),
     },
 
     requestedEMI: Math.round(proposedEMI),
 
     fairRate: {
-      min: rateBand.min,
-      max: rateBand.max,
+      min: adjustedRateBand.min,
+      max: adjustedRateBand.max,
     },
 
     confidence,
+
+    missingInputs,
 
     flags,
 

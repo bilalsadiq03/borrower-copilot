@@ -15,14 +15,14 @@ import { generateOffers } from "@/lib/offers/genearteOffers"
 import type { LoanOffer } from "@/lib/offers/types"
 
 export default function Home() {
-  const [result, setResult] =
-    useState<RulesResult | null>(null)
+  const [result, setResult] = useState<RulesResult | null>(
+    null
+  )
 
-  const [offers, setOffers] =
-    useState<LoanOffer[]>([])
+  const [offers, setOffers] = useState<LoanOffer[]>([])
 
   const [profile, setProfile] =
-  useState<BorrowerProfile | null>(null)
+    useState<BorrowerProfile | null>(null)
 
   const [recommendation, setRecommendation] =
     useState<CopilotRecommendation | null>(null)
@@ -51,22 +51,26 @@ export default function Home() {
     )
   }
 
-  if (profile && result && recommendation) {
-  return (
-    <ResultsDashboard
-      profile={profile}
-      result={result}
-      recommendation={recommendation}
-      offers={offers}
-      onStartOver={() => {
-        setProfile(null)
-        setResult(null)
-        setRecommendation(null)
-        setOffers([])
-      }}
-    />
-  )
-}
+  const currentProfile = profile
+  const currentResult = result
+  const currentRecommendation = recommendation
+
+  if (currentProfile && currentResult && currentRecommendation) {
+    return (
+      <ResultsDashboard
+        profile={currentProfile}
+        result={currentResult}
+        recommendation={currentRecommendation}
+        offers={offers}
+        onStartOver={() => {
+          setProfile(null)
+          setResult(null)
+          setRecommendation(null)
+          setOffers([])
+        }}
+      />
+    )
+  }
 
   return (
     <Questionnaire

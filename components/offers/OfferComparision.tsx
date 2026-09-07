@@ -35,7 +35,7 @@ export function OfferComparison({
         </h2>
 
         <p className="mt-2 text-sm text-white/60">
-          Don't compare loans on EMI alone.
+          Don&apos;t compare loans on EMI alone.
           Look at the rate, fees and total
           repayment together.
         </p>

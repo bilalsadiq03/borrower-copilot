@@ -6,6 +6,7 @@ interface DecisionInput {
   requestedAmount: number
   safeAmount: number
   stressPasses: boolean
+  monthlyExpenses?: number
 }
 
 export function getBorrowDecision({
@@ -13,6 +14,7 @@ export function getBorrowDecision({
   requestedAmount,
   safeAmount,
   stressPasses,
+  monthlyExpenses = 0,
 }: DecisionInput): {
   decision: BorrowDecision
   reason: string
@@ -31,12 +33,30 @@ export function getBorrowDecision({
       ? existingEMI / income
       : 1
 
+  const postExpenseBuffer =
+    income -
+    Math.max(0, monthlyExpenses) -
+    existingEMI
+
+  const postExpenseBufferRatio =
+    income > 0
+      ? postExpenseBuffer / income
+      : 0
+
   // Hard stop: current debt burden already too high
   if (currentFOIR >= 0.50) {
     return {
       decision: "dont-borrow",
       reason:
         "Your existing loan payments already consume a large share of your income.",
+    }
+  }
+
+  if (postExpenseBufferRatio <= 0.2) {
+    return {
+      decision: "dont-borrow",
+      reason:
+        "Household expenses and current EMIs leave too little monthly buffer for another loan.",
     }
   }
 

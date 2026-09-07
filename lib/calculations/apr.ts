@@ -6,6 +6,10 @@ import { calculateEMI } from "./emi"
  *
  * This uses the loan's cash-flow IRR and converts the
  * monthly rate into an annual effective rate.
+ *
+ * Note:
+ * This is an indicative all-in annualized cost estimate,
+ * not a regulatory lender APR calculation.
  */
 
 export interface LoanCost {
@@ -39,12 +43,14 @@ export function calculateAPR(
   )
 
   const processingFee =
-    principal * (processingFeePercent / 100)
+    principal *
+    (processingFeePercent / 100)
 
   const totalUpfrontFees =
-    processingFee + Math.max(0, upfrontCharges)
+    processingFee +
+    Math.max(0, upfrontCharges)
 
-  // Net amount actually received by borrower
+  // Net amount actually received by borrower.
   const netDisbursal =
     principal - totalUpfrontFees
 
@@ -57,14 +63,21 @@ export function calculateAPR(
   let high = 1
 
   for (let i = 0; i < 100; i++) {
-    const monthlyRate = (low + high) / 2
+    const monthlyRate =
+      (low + high) / 2
 
     const pv =
-      emi *
-      (
-        (1 - Math.pow(1 + monthlyRate, -tenureMonths)) /
-        monthlyRate
-      )
+      monthlyRate === 0
+        ? emi * tenureMonths
+        : emi *
+          (
+            (1 -
+              Math.pow(
+                1 + monthlyRate,
+                -tenureMonths
+              )) /
+            monthlyRate
+          )
 
     if (pv > netDisbursal) {
       low = monthlyRate
@@ -73,11 +86,15 @@ export function calculateAPR(
     }
   }
 
-  const monthlyIRR = (low + high) / 2
+  const monthlyIRR =
+    (low + high) / 2
 
-  // Effective annual rate
+  // Effective annual rate.
   return (
-    Math.pow(1 + monthlyIRR, 12) - 1
+    Math.pow(
+      1 + monthlyIRR,
+      12
+    ) - 1
   ) * 100
 }
 
@@ -95,7 +112,8 @@ export function calculateLoanCost(
   )
 
   const processingFee =
-    principal * (processingFeePercent / 100)
+    principal *
+    (processingFeePercent / 100)
 
   const totalRepayment =
     emi * tenureMonths
@@ -106,7 +124,10 @@ export function calculateLoanCost(
   const totalCost =
     totalInterest +
     processingFee +
-    Math.max(0, upfrontCharges)
+    Math.max(
+      0,
+      upfrontCharges
+    )
 
   const apr = calculateAPR(
     principal,

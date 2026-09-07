@@ -7,6 +7,12 @@ export interface LoanOffer {
 
   interestRate: number
 
+  /**
+   * Indicative all-in annualized cost,
+   * including upfront processing fees.
+   */
+  apr: number
+
   processingFee: number
 
   tenureMonths: number

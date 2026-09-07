@@ -15,6 +15,7 @@ export const RULES = {
   affordability: {
     defaultLenderFOIR: 0.50,
     defaultBorrowerFOIR: 0.40,
+    postExpenseBorrowerShare: 0.55,
 
     stressedFOIR: 0.50,
   },

@@ -8,11 +8,11 @@ import { DecisionCard } from "./DecisionCard"
 import { AffordabilityCard } from "./AffordabilityCard"
 import { StressTestCard } from "./StressTestCard"
 import { ExplanationList } from "./ExplanationList"
+import { NegotiationCard } from "./NegotiationCard"
 import type { LoanOffer } from "@/lib/offers/types"
 import { OfferComparison } from "@/components/offers/OfferComparision"
 import { CopilotChat } from "@/components/copilot/CopilotChat"
-import { BorrowerProfile } from "@/types/borrower"
-import { profile } from "console"
+import type { BorrowerProfile } from "@/types/borrower"
 import { StressTest } from "@/components/stress/StressTest"
 
 interface ResultsDashboardProps {
@@ -47,10 +47,16 @@ export function ResultsDashboard({
         </p>
       </header>
 
+      <NegotiationCard
+        profile={profile}
+        result={result}
+        recommendation={recommendation}
+      />
+
       <StressTest
         profile={profile}
         result={result}
-      />c
+      />
 
       <OfferComparison offers={offers} />
 

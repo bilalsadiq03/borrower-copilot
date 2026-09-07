@@ -12,12 +12,9 @@ export function generateCopilotRecommendation(
   const explanations: Explanation[] = []
   const actions: string[] = []
 
-  /*
-   * Existing debt
-   */
   if (
-    profile.existingEMI &&
-    profile.monthlyIncome
+    profile.existingEMI !== undefined &&
+    profile.monthlyIncome !== undefined
   ) {
     const existingFOIR =
       profile.existingEMI /
@@ -25,7 +22,8 @@ export function generateCopilotRecommendation(
 
     if (existingFOIR >= 0.35) {
       explanations.push({
-        title: "Existing debt is already significant",
+        title:
+          "Existing debt is already significant",
         message:
           `Your existing EMIs use about ${(existingFOIR * 100).toFixed(1)}% of your monthly income.`,
         severity: "warning",
@@ -34,9 +32,6 @@ export function generateCopilotRecommendation(
     }
   }
 
-  /*
-   * Stress test
-   */
   if (
     result.stressTest.stressedFOIR >
     result.borrowerFOIR
@@ -53,9 +48,6 @@ export function generateCopilotRecommendation(
     })
   }
 
-  /*
-   * Recent repayment issue
-   */
   if (profile.recentBounce === true) {
     explanations.push({
       title: "Recent repayment issue",
@@ -70,9 +62,6 @@ export function generateCopilotRecommendation(
     )
   }
 
-  /*
-   * Unknown credit score
-   */
   if (!profile.creditScoreKnown) {
     explanations.push({
       title: "Credit history is unknown",
@@ -87,9 +76,6 @@ export function generateCopilotRecommendation(
     )
   }
 
-  /*
-   * Emergency savings
-   */
   if (
     profile.emergencySavingsMonths !== undefined &&
     profile.emergencySavingsMonths < 2
@@ -107,14 +93,10 @@ export function generateCopilotRecommendation(
     )
   }
 
-  /*
-   * Safe amount vs requested amount
-   */
   if (
-    profile.loanAmount &&
+    profile.loanAmount !== undefined &&
     result.safeAmount.max > 0 &&
-    profile.loanAmount >
-      result.safeAmount.max
+    profile.loanAmount > result.safeAmount.max
   ) {
     explanations.push({
       title: "Requested amount is above the safe range",
@@ -129,12 +111,7 @@ export function generateCopilotRecommendation(
     )
   }
 
-  /*
-   * Product route
-   */
-  if (
-    result.productRoute === "secured-lap"
-  ) {
+  if (result.productRoute === "secured-lap") {
     explanations.push({
       title: "A secured route may be more suitable",
       message:
@@ -148,9 +125,6 @@ export function generateCopilotRecommendation(
     )
   }
 
-  /*
-   * Final headline
-   */
   let headline: string
   let summary: string
 
@@ -159,34 +133,25 @@ export function generateCopilotRecommendation(
       headline = "Borrowing looks manageable"
       summary =
         "The requested borrowing is within the current affordability and stress-test limits."
-
       break
-
     case "borrow-less":
       headline = "Consider borrowing less"
       summary =
         "The requested amount is higher than what your current cash flow can comfortably support."
-
       break
-
     case "dont-borrow":
       headline = "We recommend waiting"
       summary =
         "Taking on another loan would put too much pressure on your current financial position."
-
       break
   }
 
   return {
     decision: result.decision,
-
     headline,
     summary,
-
     explanations,
-
     actions,
-
     confidence: result.confidence,
   }
 }

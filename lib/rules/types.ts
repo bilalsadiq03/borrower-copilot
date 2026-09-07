@@ -42,6 +42,8 @@ export interface RulesResult {
     | "medium"
     | "low"
 
+  missingInputs: string[]
+
   flags: string[]
 
   productRoute: ProductRoute

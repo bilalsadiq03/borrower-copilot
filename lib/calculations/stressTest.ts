@@ -2,6 +2,7 @@ import { calculateFOIR } from "./affordability"
 
 export interface StressTestInput {
   monthlyIncome: number
+  monthlyExpenses?: number
   existingEMI: number
   proposedEMI: number
   incomeDropPercent?: number
@@ -30,6 +31,7 @@ export interface StressTestResult {
  */
 export function calculateStressTest({
   monthlyIncome,
+  monthlyExpenses = 0,
   existingEMI,
   proposedEMI,
   incomeDropPercent = 20,
@@ -75,10 +77,13 @@ export function calculateStressTest({
     )
 
   const normalDisposableIncome =
-    monthlyIncome - totalEMI
+    monthlyIncome -
+    monthlyExpenses -
+    totalEMI
 
   const stressedDisposableIncome =
     stressedIncome -
+    monthlyExpenses -
     totalEMI -
     Math.max(0, expenseIncrease)
 

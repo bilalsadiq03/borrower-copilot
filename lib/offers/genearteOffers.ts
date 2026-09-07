@@ -3,6 +3,7 @@ import type { RulesResult } from "@/lib/rules/types"
 import type { LoanOffer } from "./types"
 
 import { calculateEMI } from "@/lib/calculations/emi"
+import { calculateAPR } from "../calculations/apr"
 
 export function generateOffers(
   profile: BorrowerProfile,
@@ -42,6 +43,15 @@ export function generateOffers(
   return offerTemplates.map(
     (template) => {
       const tenureMonths = 60
+      const processingFee = template.fee
+
+      const apr = calculateAPR(
+        amount,
+        template.rate,
+        tenureMonths,
+        0,
+        processingFee
+      )
 
       const emi = calculateEMI(
         amount,
@@ -55,7 +65,7 @@ export function generateOffers(
       const totalCost =
         totalRepayment -
         amount +
-        template.fee
+        processingFee
 
       const suitable =
         template.rate <=
@@ -74,8 +84,10 @@ export function generateOffers(
         interestRate:
           template.rate,
 
+        apr,
+
         processingFee:
-          template.fee,
+          processingFee,
 
         tenureMonths,
 
